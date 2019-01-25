@@ -1,0 +1,7 @@
+git+https://github.com/flowroute/flowroute-messaging-python.git#egg=flowroute-messaging-python
+arrow==0.12.1
+slackclient==1.0.5
+pytest==3.2.5
+boto3==1.4.7
+redis==2.10.5
+emoji==0.4.5

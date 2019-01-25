@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Redis for SMS Slackbot
+
+Parameters:
+
+  VpcId:
+    Description: VPC ID for Redis
+    Type: String
+  VpcCidr:
+    Description: Network to allow traffic from in CIDR format
+    Type: String
+  SubnetId:
+    Description: Subnet ID for Redis
+    Type: String
+  RedisPort:
+    Description: "Enter TCP port number for Redis server. Default is 6379."
+    Default: 6379
+    MinValue: 1024
+    MaxValue: 65535
+    Type: Number
+  ClusterNodeType:
+    ConstraintDescription: "Must select a valid Cache Node type."
+    Default: "cache.t2.micro"
+    Description: "The compute and memory capacity of the node."
+    Type: String
+    AllowedValues:
+      - cache.t2.micro
+      - cache.t2.small
+      - cache.t2.medium
+      - cache.m3.medium
+      - cache.m3.large
+      - cache.m3.xlarge
+
+Resources:
+
+  ElastiCacheCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      AutoMinorVersionUpgrade: true
+      CacheNodeType: !Ref ClusterNodeType
+      CacheSubnetGroupName: !Ref CacheSubnetGroup
+      Engine: redis
+      EngineVersion: 3.2.6
+      NumCacheNodes: 1
+      PreferredMaintenanceWindow: sun:07:00-sun:08:00
+      VpcSecurityGroupIds:
+        - !GetAtt ElastiCacheSecurityGroup.GroupId
+      Tags:
+        - Key: Product
+          Value: slack-sms
+
+  ElastiCacheSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: slack-sms
+      VpcId: !Ref VpcId
+      SecurityGroupEgress:
+        -
+          CidrIp: "0.0.0.0/0"
+          IpProtocol: "-1"
+      SecurityGroupIngress:
+        -
+          CidrIp: !Ref VpcCidr
+          IpProtocol: tcp
+          FromPort: !Ref RedisPort
+          ToPort: !Ref RedisPort
+      Tags:
+        - Key: Product
+          Value: slack-sms
+
+  CacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: slack-sms
+      SubnetIds:
+        - !Ref SubnetId
+
+
+
+Outputs:
+  ElastiCacheSecurityGroup:
+    Description: "Security group for slack-sms redis"
+    Value: !GetAtt ElastiCacheSecurityGroup.GroupId
+    Export:
+      Name: !Join [":", [{"Ref": "AWS::StackName"}, "SecurityGroup"]]
+  RedisAddress:
+    Description: "Redis client endpoint for slack-sms"
+    Value: !GetAtt ElastiCacheCluster.RedisEndpoint.Address
+    Export:
+      Name: !Join [":", [{"Ref": "AWS::StackName"}, "RedisAddress"]]
+  RedisPort:
+    Description: "Redis client port for slack-sms"
+    Value: !GetAtt ElastiCacheCluster.RedisEndpoint.Port
+    Export:
+      Name: !Join [":", [{"Ref": "AWS::StackName"}, "RedisPort"]]

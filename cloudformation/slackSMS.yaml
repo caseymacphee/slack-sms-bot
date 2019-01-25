@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SMS Slackbot
+
+Resources:
+
+  SlackSMSFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_handler
+      Runtime: python2.7
+      CodeUri: s3://myaccount-slackbot-sms/slack_sms-0.0.1.zip
+      Environment:
+        Variables:
+          SLACK_CLIENT_TOKEN: fake-client-token
+          SLACK_VERIFICATION_TOKEN: fake-verification-token
+          FLOWROUTE_SECRET_KEY: fake-fr-secret-key
+          FLOWROUTE_ACCESS_KEY: fake-fr-access-key
+          FLOWROUTE_NUMBER: 12345678910
+      Events:
+        SlackEvent:
+          Type: Api
+          Properties:
+            Path: /SMSbot
+            Method: any

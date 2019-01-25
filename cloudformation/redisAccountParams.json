@@ -1,0 +1,14 @@
+[
+    {
+        "ParameterKey": "VpcId",
+        "ParameterValue": "vpc-id"
+    },
+    {
+        "ParameterKey": "VpcCidr",
+        "ParameterValue": "ip"
+    },
+    {
+        "ParameterKey": "SubnetId",
+        "ParameterValue": "subnet"
+    }
+]
